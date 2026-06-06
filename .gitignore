@@ -1,0 +1,16 @@
+# 打包产物 / 缓存
+.venv/
+venv/
+__pycache__/
+*.pyc
+build/
+dist/
+*.egg-info/
+
+# 模型（构建时自动下载，避免推上 GitHub）
+models/
+argos-packages/
+
+# 系统垃圾
+.DS_Store
+Thumbs.db

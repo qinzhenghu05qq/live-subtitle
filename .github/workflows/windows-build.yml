@@ -1,0 +1,53 @@
+name: Windows Build
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: cmd
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Python deps
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+          python -m pip install pyinstaller==6.10.0
+
+      - name: Pre-download Vosk + Argos models
+        run: python download_models.py
+
+      - name: Build with PyInstaller
+        run: pyinstaller --noconfirm --clean LiveSubtitle.spec
+
+      - name: Compile installer (Inno Setup)
+        run: |
+          "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer.iss
+
+      - name: Upload installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: LiveSubtitleSetup
+          path: dist/LiveSubtitleSetup.exe
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Upload portable folder
+        uses: actions/upload-artifact@v4
+        with:
+          name: LiveSubtitle-portable
+          path: dist/LiveSubtitle/**
+          retention-days: 30
