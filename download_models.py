@@ -8,7 +8,13 @@ import sys
 import urllib.request
 import zipfile
 from pathlib import Path
-
+# Windows 默认 cp1252 控制台不能打印 Unicode（如 argos pkg 的 __repr__ 里含 →）
+if hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
 
 VOSK_URL = "https://alphacephei.com/vosk/models/vosk-model-small-en-us-0.15.zip"
 
@@ -70,7 +76,7 @@ def fetch_argos() -> None:
     )
     if pkg is None:
         raise RuntimeError("No en->zh package available in argos index")
-    print(f"Downloading argos package {pkg}...")
+    print(f"Downloading argos package {pkg.from_code} -> {pkg.to_code} (v{getattr(pkg, 'package_version', '?')}) ...")
     src_path = pkg.download()
     shutil.copy(src_path, target)
     print(f"[ok] argos en->zh at {target}")
